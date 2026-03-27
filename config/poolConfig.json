@@ -1,0 +1,4 @@
+{
+  "maxPoolSize": 10,
+  "minPoolSize": 2
+}
