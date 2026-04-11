@@ -1,0 +1,5 @@
+﻿{
+  "maxPoolSize": 10,
+  "minPoolSize": 2,
+  "waitQueueTimeoutMS": 1000
+}

@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const path = require("path");
 
 let requestCount = 0;
@@ -16,7 +16,6 @@ function resetRequests() {
 }
 
 function adjustPool() {
-
     let newPoolSize = 10;
 
     if (requestCount > 20) {
@@ -30,7 +29,8 @@ function adjustPool() {
 
     const config = {
         maxPoolSize: newPoolSize,
-        minPoolSize: 2
+        minPoolSize: 2,
+        waitQueueTimeoutMS: 1000
     };
 
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
