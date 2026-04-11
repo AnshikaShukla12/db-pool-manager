@@ -1,5 +1,0 @@
-mkdir db-pool-manager
-cd db-pool-manager
-npm init -y
-npm install express mongodb dotenv
-npm install nodemon --save-dev
