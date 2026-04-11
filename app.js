@@ -1,26 +1,41 @@
 const express = require("express");
 require("dotenv").config();
 
+/* DB */
 const { connectDB } = require("./config/db");
+
+/* Routes */
 const userRoutes = require("./routes/userRoutes");
+const monitorRoutes = require("./routes/monitorRoutes");
+const metricsRoutes = require("./routes/metricsRoutes");
+const logRoutes = require("./routes/logRoutes");
+
+/* Services */
 const getPoolStatus = require("./services/poolMonitor");
 const { increaseRequest, adjustPool } = require("./services/adaptivePool");
 
-const app = express();
-app.use(express.json());
+/* Middleware */
+const requestLogger = require("./middleware/requestLogger");
+const errorHandler = require("./middleware/errorHandler");
 
-/* Middleware to count requests */
+const app = express();
+
+/* Middleware */
+app.use(express.json());
+app.use(requestLogger);
+
+/* Request Counter */
 app.use((req, res, next) => {
     increaseRequest();
     next();
 });
 
-/* Home Route */
+/* Home */
 app.get("/", (req, res) => {
     res.send("Database Pool Manager Running");
 });
 
-/* Health Check */
+/* Health */
 app.get("/health", (req, res) => {
     res.json({
         status: "OK",
@@ -28,16 +43,33 @@ app.get("/health", (req, res) => {
     });
 });
 
-/* API Routes */
-app.use("/api", userRoutes);
-
 /* Pool Status */
 app.get("/pool-status", (req, res) => {
-    res.json(getPoolStatus());
+    res.json({
+        status: "Pool Running",
+        data: getPoolStatus()
+    });
 });
+
+/* Routes */
+app.use("/", monitorRoutes);
+app.use("/", metricsRoutes);
+app.use("/", logRoutes);
+app.use("/api", userRoutes);
+
+/* 404 Handler */
+app.use((req, res, next) => {
+    const error = new Error("Route Not Found");
+    error.status = 404;
+    next(error);
+});
+
+/* Global Error Handler */
+app.use(errorHandler);
 
 /* Start Server */
 async function startServer() {
+
     await connectDB();
 
     const PORT = process.env.PORT || 3000;
@@ -46,7 +78,7 @@ async function startServer() {
         console.log("Server running on port", PORT);
     });
 
-    /* Adaptive Pool Scaling every 30 sec */
+    /* Adaptive Pool Scaling */
     setInterval(() => {
         adjustPool();
     }, 30000);

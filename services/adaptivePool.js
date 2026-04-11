@@ -1,46 +1,53 @@
 const fs = require("fs");
 const path = require("path");
 
-let requestCount = 0;
+const configPath = path.join(__dirname, "../config/poolConfig.json");
 
+let requestCount = 0;
+let lastPoolAdjustment = new Date();
+
+/* Increase Request Count */
 function increaseRequest() {
     requestCount++;
 }
 
+/* Get Request Count */
 function getRequestCount() {
     return requestCount;
 }
 
-function resetRequests() {
-    requestCount = 0;
+/* Get Last Pool Adjustment */
+function getLastPoolAdjustment() {
+    return lastPoolAdjustment;
 }
 
+/* Adjust Pool Size */
 function adjustPool() {
 
-    let newPoolSize = 10;
+    let config = JSON.parse(fs.readFileSync(configPath));
 
-    if (requestCount > 20) {
-        newPoolSize = 30;
+    if (requestCount > 10) {
+
+        config.maxPoolSize += 2;
+        console.log("Pool increased to:", config.maxPoolSize);
+        lastPoolAdjustment = new Date();
+
     } 
-    else if (requestCount > 10) {
-        newPoolSize = 20;
+    else if (requestCount > 0 && requestCount < 3 && config.maxPoolSize > config.minPoolSize) {
+
+        config.maxPoolSize -= 1;
+        console.log("Pool decreased to:", config.maxPoolSize);
+        lastPoolAdjustment = new Date();
     }
-
-    const configPath = path.join(__dirname, "../config/poolConfig.json");
-
-    const config = {
-        maxPoolSize: newPoolSize,
-        minPoolSize: 2
-    };
 
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-    console.log("Pool updated to:", newPoolSize);
-
-    resetRequests();
+    requestCount = 0;
 }
 
 module.exports = {
     increaseRequest,
-    adjustPool
+    adjustPool,
+    getRequestCount,
+    getLastPoolAdjustment
 };
