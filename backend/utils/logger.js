@@ -10,6 +10,11 @@ function log(message) {
 
     console.log(logMessage);
 
+    const logDir = path.dirname(logFilePath);
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+    }
+
     fs.appendFileSync(logFilePath, logMessage);
 }
 
