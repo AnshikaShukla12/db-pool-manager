@@ -1,6 +1,7 @@
 #!/bin/bash
 
-echo "Adjusting Pool Size..."
+
+echo "Adjusting Pool Size...."
 
 POOL_SIZE=$1
 
